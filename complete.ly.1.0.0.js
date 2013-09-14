@@ -69,7 +69,7 @@ function completely(container, config) {
     if (document.body === undefined) {
         throw 'document.body is undefined. The library was wired up incorrectly.';
     }
-    document.body.appendChild(prompt);            // assumes I can access document.body (possibly I could send a runtime exception)
+    document.body.appendChild(prompt);            
     var w = prompt.getBoundingClientRect().right; // works out the width of the prompt.
     wrapper.appendChild(prompt);
     prompt.style.visibility = 'visible';
