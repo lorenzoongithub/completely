@@ -15,6 +15,7 @@ function completely(container, config) {
     config.hintColor =                      config.hintColor || '#aaa';
     config.backgroundColor =                config.backgroundColor || '#fff';
     config.dropDownBorderColor =            config.dropDownBorderColor || '#aaa';
+    config.optionsFunction =                config.optionsFunction || false;
     config.dropDownZIndex =                 config.dropDownZIndex || '100'; // to ensure we are in front of everybody
     config.dropDownOnHoverBackgroundColor = config.dropDownOnHoverBackgroundColor || '#ddd';
     
@@ -224,6 +225,7 @@ function completely(container, config) {
         onChange:     function() { rs.repaint() }, // defaults to repainting.
         startFrom:    0,
         options:      [],
+        optionsFunction: config.optionsFunction,
         wrapper : wrapper,      // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
         input :  txtInput,      // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations) 
         hint  :  txtHint,       // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
@@ -242,7 +244,11 @@ function completely(container, config) {
         repaint : function() {
             var text = txtInput.value;
             var startFrom =  rs.startFrom; 
-            var options =    rs.options;
+            var options;
+            if (rs.optionsFunction)
+              options = rs.optionsFunction();
+            else
+              options =    rs.options;
             var optionsLength = options.length; 
             
             // breaking text in leftSide and token.
