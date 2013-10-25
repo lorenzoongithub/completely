@@ -267,7 +267,7 @@ function completely(container, config) {
             
             // moving the dropDown and refreshing it.
             dropDown.style.left = calculateWidthForText(leftSide)+'px';
-            dropDownController.refresh(token, rs.options);
+            dropDownController.refresh(token, options);
         }
     };
     
