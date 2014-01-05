@@ -17,6 +17,7 @@ function completely(container, config) {
     config.dropDownBorderColor =            config.dropDownBorderColor || '#aaa';
     config.dropDownZIndex =                 config.dropDownZIndex || '100'; // to ensure we are in front of everybody
     config.dropDownOnHoverBackgroundColor = config.dropDownOnHoverBackgroundColor || '#ddd';
+    config.isMobile =                       config.isMobile || true;
     
     var txtInput = document.createElement('input');
     txtInput.type ='text';
@@ -310,19 +311,18 @@ function completely(container, config) {
     var keyDownHandler = function(e) {
         e = e || window.event;
         var keyCode = e.keyCode;
+        if (key(keyCode, 'pageUp')) { return; } // page up (do nothing)
+        if (key(keyCode, 'pageDown')) { return; } // page down (do nothing);
         
-        if (keyCode == 33) { return; } // page up (do nothing)
-        if (keyCode == 34) { return; } // page down (do nothing);
-        
-        if (keyCode == 27) { //escape
+        if (key(keyCode, 'escape')){
             dropDownController.hide();
             txtHint.value = txtInput.value; // ensure that no hint is left.
             txtInput.focus(); 
             return; 
         }
         
-        if (keyCode == 39 || keyCode == 35 || keyCode == 9) { // right,  end, tab  (autocomplete triggered)
-        	if (keyCode == 9) { // for tabs we need to ensure that we override the default behaviour: move to the next focusable HTML-element 
+        if (key(keyCode, 'right') || key(keyCode, 'end') || key(keyCode, 'tab')) { // right,  end, tab  (autocomplete triggered)
+        	if (key(keyCode, 'tab')) { // for tabs we need to ensure that we override the default behaviour: move to the next focusable HTML-element 
            	    e.preventDefault();
                 e.stopPropagation();
                 if (txtHint.value.length == 0) {
@@ -344,7 +344,7 @@ function completely(container, config) {
             return; 
         }
         
-        if (keyCode == 13) {       // enter  (autocomplete triggered)
+        if (key(keyCode, 'enter')) {       // enter  (autocomplete triggered)
             if (txtHint.value.length == 0) { // if there is a hint
                 rs.onEnter();
             } else {
@@ -371,14 +371,14 @@ function completely(container, config) {
             return; 
         }
         
-        if (keyCode == 40) {     // down
+        if (key(keyCode, 'down')) {     // down
             var m = dropDownController.move(+1);
             if (m == '') { rs.onArrowDown(); }
             txtHint.value = leftSide+m;
             return; 
         } 
             
-        if (keyCode == 38 ) {    // up
+        if (key(keyCode, 'up')) {    // up
             var m = dropDownController.move(-1);
             if (m == '') { rs.onArrowUp(); }
             txtHint.value = leftSide+m;
@@ -392,6 +392,23 @@ function completely(container, config) {
         // and you would see still the hint
         txtHint.value =''; // resets the txtHint. (it might be updated onKeyUp)
         
+    };
+    
+    var key =  function(code, name){
+
+        
+        var codes = {
+            'pageUp' : 33,
+            'pageDown' : 34,
+            'escape' : 27,
+            'right' : 39,
+            'end' : 35,
+            'tab' : config.isMobile ? 13 : 9,
+            'enter' : 13,
+            'down' : 40,
+            'up' : 38
+        };
+        return codes[name] === code ? true : false;
     };
     
     if (txtInput.addEventListener) {
