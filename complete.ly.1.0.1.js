@@ -134,6 +134,7 @@ function completely(container, config) {
                     if (_entry.indexOf(_token)!==0) { continue; }
                     var divRow =document.createElement('div');
                     divRow.style.color = config.color;
+                    divRow.className = 'suggestion';
                     divRow.onmouseover = onMouseOver; 
                     divRow.onmouseout =  onMouseOut;
                     divRow.onclick = onMouseDown; 
