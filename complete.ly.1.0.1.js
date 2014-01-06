@@ -17,11 +17,16 @@ function completely(container, config) {
     config.dropDownBorderColor =            config.dropDownBorderColor || '#aaa';
     config.dropDownZIndex =                 config.dropDownZIndex || '100'; // to ensure we are in front of everybody
     config.dropDownOnHoverBackgroundColor = config.dropDownOnHoverBackgroundColor || '#ddd';
-    config.isMobile =                       config.isMobile || true;
+    config.isMobile =                       config.isMobile || false;
+    config.ignoreCase =                     config.ignoreCase || false;
+    
     
     var txtInput = document.createElement('input');
     txtInput.type ='text';
     txtInput.spellcheck = false; 
+    txtInput.setAttribute('autocapitalize', "off");
+    txtInput.setAttribute('autocorrect', "off");
+    txtInput.setAttribute('autocomplete', "off");
     txtInput.style.fontSize =        config.fontSize;
     txtInput.style.fontFamily =      config.fontFamily;
     txtInput.style.color =           config.color;
@@ -33,6 +38,7 @@ function completely(container, config) {
     txtInput.style.padding = '0';
     
     var txtHint = txtInput.cloneNode(); 
+    txtHint.type='text';
     txtHint.disabled='';        
     txtHint.style.position = 'absolute';
     txtHint.style.top =  '0';
@@ -122,25 +128,28 @@ function completely(container, config) {
                 
                 rows = [];
                 for (var i=0;i<array.length;i++) {
-                    if (array[i].indexOf(token)!==0) { continue; }
+                    var _token = config.ignoreCase ? token.toLowerCase() : token,
+                        _entry = config.ignoreCase ? array[i].toLowerCase() : array[i],
+                        _normalizedToken = array[i].substring(0, token.length);
+                    if (_entry.indexOf(_token)!==0) { continue; }
                     var divRow =document.createElement('div');
                     divRow.style.color = config.color;
                     divRow.onmouseover = onMouseOver; 
                     divRow.onmouseout =  onMouseOut;
-                    divRow.onmousedown = onMouseDown; 
+                    divRow.onclick = onMouseDown; 
+                    
                     divRow.__hint =    array[i];
-                    divRow.innerHTML = token+'<b>'+array[i].substring(token.length)+'</b>';
+                    divRow.innerHTML = _normalizedToken+'<b>'+array[i].substring(token.length)+'</b>';
                     rows.push(divRow);
                     elem.appendChild(divRow);
                 }
                 if (rows.length===0) {
                     return; // nothing to show.
                 }
-                if (rows.length===1 && token === rows[0].__hint) {
+                if (rows.length===1 && token === rows[0].__hint && !config.isMobile) {
                     return; // do not show the dropDown if it has only one element which matches what we have just displayed.
                 }
-                
-                if (rows.length<2) return; 
+                if (rows.length<2 && !config.isMobile) return; 
                 p.highlight(0);
                 
                 if (distanceToTop > distanceToBottom*3) {        // Heuristic (only when the distance to the to top is 4 times more than distance to the bottom
@@ -176,6 +185,7 @@ function completely(container, config) {
     var dropDownController = createDropDownController(dropDown);
     
     dropDownController.onmouseselection = function(text) {
+        txtInput.focus(); //Mobile webkit requires focus without setTimout
         txtInput.value = txtHint.value = leftSide+text; 
         rs.onChange(txtInput.value); // <-- forcing it.
         registerOnTextChangeOldValue = txtInput.value; // <-- ensure that mouse down will not show the dropDown now.
@@ -225,6 +235,7 @@ function completely(container, config) {
         onChange:     function() { rs.repaint() }, // defaults to repainting.
         startFrom:    0,
         options:      [],
+        optionsLowerCase: false,
         wrapper : wrapper,      // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
         input :  txtInput,      // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations) 
         hint  :  txtHint,       // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
@@ -254,7 +265,10 @@ function completely(container, config) {
             txtHint.value ='';
             for (var i=0;i<optionsLength;i++) {
                 var opt = options[i];
-                if (opt.indexOf(token)===0) {         // <-- how about upperCase vs. lowercase
+                if (opt.indexOf(token)=== 0 || config.ignoreCase && opt.toLowerCase().indexOf(token.toLowerCase()) === 0) {         // <-- how about upperCase vs. lowercase
+                    if(config.ignoreCase){
+                        var opt = token + opt.substring(token.length)
+                    }
                     txtHint.value = leftSide +opt;
                     break;
                 }
@@ -390,13 +404,14 @@ function completely(container, config) {
         // it's important to reset the txtHint on key down.
         // think: user presses a letter (e.g. 'x') and never releases... you get (xxxxxxxxxxxxxxxxx)
         // and you would see still the hint
-        txtHint.value =''; // resets the txtHint. (it might be updated onKeyUp)
+        if(!config.isMobile){
+            txtHint.value =''; // resets the txtHint. (it might be updated onKeyUp)
+        }
         
     };
     
     var key =  function(code, name){
 
-        
         var codes = {
             'pageUp' : 33,
             'pageDown' : 34,
