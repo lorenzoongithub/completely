@@ -132,6 +132,7 @@ function completely(container, config) {
                     divRow.style.color = config.color;
                     divRow.onmouseover = onMouseOver; 
                     divRow.onmouseout =  onMouseOut;
+                    divRow.onmousedown =  onMouseDown;
                     
                     divRow.__hint =    array[i];
                     divRow.innerHTML = _normalizedToken+'<b>'+array[i].substring(token.length)+'</b>';
