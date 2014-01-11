@@ -17,6 +17,8 @@ function completely(container, config) {
     config.dropDownBorderColor =            config.dropDownBorderColor || '#aaa';
     config.dropDownZIndex =                 config.dropDownZIndex || '100'; // to ensure we are in front of everybody
     config.dropDownOnHoverBackgroundColor = config.dropDownOnHoverBackgroundColor || '#ddd';
+    config.ignoreCase =                     config.ignoreCase || false;
+    
     
     var txtInput = document.createElement('input');
     txtInput.type ='text';
@@ -32,6 +34,7 @@ function completely(container, config) {
     txtInput.style.padding = '0';
     
     var txtHint = txtInput.cloneNode(); 
+    txtHint.type='text';
     txtHint.disabled='';        
     txtHint.style.position = 'absolute';
     txtHint.style.top =  '0';
@@ -121,25 +124,29 @@ function completely(container, config) {
                 
                 rows = [];
                 for (var i=0;i<array.length;i++) {
-                    if (array[i].indexOf(token)!==0) { continue; }
+                    var _token = config.ignoreCase ? token.toLowerCase() : token,
+                        _entry = config.ignoreCase ? array[i].toLowerCase() : array[i],
+                        _normalizedToken = array[i].substring(0, token.length);
+                    if (_entry.indexOf(_token)!==0) { continue; }
                     var divRow =document.createElement('div');
                     divRow.style.color = config.color;
                     divRow.onmouseover = onMouseOver; 
                     divRow.onmouseout =  onMouseOut;
-                    divRow.onmousedown = onMouseDown; 
+                    divRow.onmousedown =  onMouseDown;
+                    
                     divRow.__hint =    array[i];
-                    divRow.innerHTML = token+'<b>'+array[i].substring(token.length)+'</b>';
+                    divRow.innerHTML = _normalizedToken+'<b>'+array[i].substring(token.length)+'</b>';
                     rows.push(divRow);
                     elem.appendChild(divRow);
                 }
                 if (rows.length===0) {
                     return; // nothing to show.
                 }
-                if (rows.length===1 && token === rows[0].__hint) {
+ 		if (rows.length===1 && token === rows[0].__hint) {
                     return; // do not show the dropDown if it has only one element which matches what we have just displayed.
                 }
-                
-                if (rows.length<2) return; 
+
+		if (rows.length<2) return; 
                 p.highlight(0);
                 
                 if (distanceToTop > distanceToBottom*3) {        // Heuristic (only when the distance to the to top is 4 times more than distance to the bottom
@@ -253,7 +260,10 @@ function completely(container, config) {
             txtHint.value ='';
             for (var i=0;i<optionsLength;i++) {
                 var opt = options[i];
-                if (opt.indexOf(token)===0) {         // <-- how about upperCase vs. lowercase
+                if (opt.indexOf(token)=== 0 || config.ignoreCase && opt.toLowerCase().indexOf(token.toLowerCase()) === 0) {         // <-- how about upperCase vs. lowercase
+                    if(config.ignoreCase){
+                        var opt = token + opt.substring(token.length)
+                    }
                     txtHint.value = leftSide +opt;
                     break;
                 }
