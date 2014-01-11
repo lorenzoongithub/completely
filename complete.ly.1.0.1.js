@@ -141,11 +141,11 @@ function completely(container, config) {
                 if (rows.length===0) {
                     return; // nothing to show.
                 }
- 				if (rows.length===1 && token === rows[0].__hint) {
+ 		if (rows.length===1 && token === rows[0].__hint) {
                     return; // do not show the dropDown if it has only one element which matches what we have just displayed.
                 }
 
-				if (rows.length<2) return; 
+		if (rows.length<2) return; 
                 p.highlight(0);
                 
                 if (distanceToTop > distanceToBottom*3) {        // Heuristic (only when the distance to the to top is 4 times more than distance to the bottom
@@ -290,7 +290,7 @@ function completely(container, config) {
             }
         };
 
-         //  
+        //  
         // For user's actions, we listen to both input events and key up events
         // It appears that input events are not enough so we defensively listen to key up events too.
         // source: http://help.dottoro.com/ljhxklln.php
