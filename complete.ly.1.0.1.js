@@ -17,16 +17,12 @@ function completely(container, config) {
     config.dropDownBorderColor =            config.dropDownBorderColor || '#aaa';
     config.dropDownZIndex =                 config.dropDownZIndex || '100'; // to ensure we are in front of everybody
     config.dropDownOnHoverBackgroundColor = config.dropDownOnHoverBackgroundColor || '#ddd';
-    config.isMobile =                       config.isMobile || false;
     config.ignoreCase =                     config.ignoreCase || false;
     
     
     var txtInput = document.createElement('input');
     txtInput.type ='text';
     txtInput.spellcheck = false; 
-    txtInput.setAttribute('autocapitalize', "off");
-    txtInput.setAttribute('autocorrect', "off");
-    txtInput.setAttribute('autocomplete', "off");
     txtInput.style.fontSize =        config.fontSize;
     txtInput.style.fontFamily =      config.fontFamily;
     txtInput.style.color =           config.color;
@@ -134,10 +130,8 @@ function completely(container, config) {
                     if (_entry.indexOf(_token)!==0) { continue; }
                     var divRow =document.createElement('div');
                     divRow.style.color = config.color;
-                    divRow.className = 'suggestion';
                     divRow.onmouseover = onMouseOver; 
                     divRow.onmouseout =  onMouseOut;
-                    divRow.onclick = onMouseDown; 
                     
                     divRow.__hint =    array[i];
                     divRow.innerHTML = _normalizedToken+'<b>'+array[i].substring(token.length)+'</b>';
@@ -147,10 +141,11 @@ function completely(container, config) {
                 if (rows.length===0) {
                     return; // nothing to show.
                 }
-                if (rows.length===1 && token === rows[0].__hint && !config.isMobile) {
+ 				if (rows.length===1 && token === rows[0].__hint) {
                     return; // do not show the dropDown if it has only one element which matches what we have just displayed.
                 }
-                if (rows.length<2 && !config.isMobile) return; 
+
+				if (rows.length<2) return; 
                 p.highlight(0);
                 
                 if (distanceToTop > distanceToBottom*3) {        // Heuristic (only when the distance to the to top is 4 times more than distance to the bottom
@@ -186,7 +181,6 @@ function completely(container, config) {
     var dropDownController = createDropDownController(dropDown);
     
     dropDownController.onmouseselection = function(text) {
-        txtInput.focus(); //Mobile webkit requires focus without setTimout
         txtInput.value = txtHint.value = leftSide+text; 
         rs.onChange(txtInput.value); // <-- forcing it.
         registerOnTextChangeOldValue = txtInput.value; // <-- ensure that mouse down will not show the dropDown now.
@@ -236,7 +230,6 @@ function completely(container, config) {
         onChange:     function() { rs.repaint() }, // defaults to repainting.
         startFrom:    0,
         options:      [],
-        optionsLowerCase: false,
         wrapper : wrapper,      // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
         input :  txtInput,      // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations) 
         hint  :  txtHint,       // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
@@ -297,7 +290,7 @@ function completely(container, config) {
             }
         };
 
-        //  
+         //  
         // For user's actions, we listen to both input events and key up events
         // It appears that input events are not enough so we defensively listen to key up events too.
         // source: http://help.dottoro.com/ljhxklln.php
@@ -326,18 +319,19 @@ function completely(container, config) {
     var keyDownHandler = function(e) {
         e = e || window.event;
         var keyCode = e.keyCode;
-        if (key(keyCode, 'pageUp')) { return; } // page up (do nothing)
-        if (key(keyCode, 'pageDown')) { return; } // page down (do nothing);
         
-        if (key(keyCode, 'escape')){
+        if (keyCode == 33) { return; } // page up (do nothing)
+        if (keyCode == 34) { return; } // page down (do nothing);
+        
+        if (keyCode == 27) { //escape
             dropDownController.hide();
             txtHint.value = txtInput.value; // ensure that no hint is left.
             txtInput.focus(); 
             return; 
         }
         
-        if (key(keyCode, 'right') || key(keyCode, 'end') || key(keyCode, 'tab')) { // right,  end, tab  (autocomplete triggered)
-        	if (key(keyCode, 'tab')) { // for tabs we need to ensure that we override the default behaviour: move to the next focusable HTML-element 
+        if (keyCode == 39 || keyCode == 35 || keyCode == 9) { // right,  end, tab  (autocomplete triggered)
+        	if (keyCode == 9) { // for tabs we need to ensure that we override the default behaviour: move to the next focusable HTML-element 
            	    e.preventDefault();
                 e.stopPropagation();
                 if (txtHint.value.length == 0) {
@@ -359,7 +353,7 @@ function completely(container, config) {
             return; 
         }
         
-        if (key(keyCode, 'enter')) {       // enter  (autocomplete triggered)
+        if (keyCode == 13) {       // enter  (autocomplete triggered)
             if (txtHint.value.length == 0) { // if there is a hint
                 rs.onEnter();
             } else {
@@ -386,14 +380,14 @@ function completely(container, config) {
             return; 
         }
         
-        if (key(keyCode, 'down')) {     // down
+        if (keyCode == 40) {     // down
             var m = dropDownController.move(+1);
             if (m == '') { rs.onArrowDown(); }
             txtHint.value = leftSide+m;
             return; 
         } 
             
-        if (key(keyCode, 'up')) {    // up
+        if (keyCode == 38 ) {    // up
             var m = dropDownController.move(-1);
             if (m == '') { rs.onArrowUp(); }
             txtHint.value = leftSide+m;
@@ -405,26 +399,8 @@ function completely(container, config) {
         // it's important to reset the txtHint on key down.
         // think: user presses a letter (e.g. 'x') and never releases... you get (xxxxxxxxxxxxxxxxx)
         // and you would see still the hint
-        if(!config.isMobile){
-            txtHint.value =''; // resets the txtHint. (it might be updated onKeyUp)
-        }
+        txtHint.value =''; // resets the txtHint. (it might be updated onKeyUp)
         
-    };
-    
-    var key =  function(code, name){
-
-        var codes = {
-            'pageUp' : 33,
-            'pageDown' : 34,
-            'escape' : 27,
-            'right' : 39,
-            'end' : 35,
-            'tab' : config.isMobile ? 13 : 9,
-            'enter' : 13,
-            'down' : 40,
-            'up' : 38
-        };
-        return codes[name] === code ? true : false;
     };
     
     if (txtInput.addEventListener) {
