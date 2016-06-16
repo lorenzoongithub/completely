@@ -1,7 +1,8 @@
 /**
- * complete.ly 1.0.1
+ * complete.ly 1.0.2
  * MIT Licensing
  * Copyright (c) 2013 Lorenzo Puccetti
+ * Modified 2016 Alexander Whipp
  *
  * This Software shall be used for doing good things, not bad things.
  *
@@ -17,6 +18,7 @@ function completely(container, config) {
     config.dropDownBorderColor =            config.dropDownBorderColor || '#aaa';
     config.dropDownZIndex =                 config.dropDownZIndex || '100'; // to ensure we are in front of everybody
     config.dropDownOnHoverBackgroundColor = config.dropDownOnHoverBackgroundColor || '#ddd';
+    config.ignoreCase =                     config.ignoreCase || false;
 
     var txtInput = document.createElement('input');
     txtInput.type ='text';
@@ -121,7 +123,11 @@ function completely(container, config) {
 
                 rows = [];
                 for (var i=0;i<array.length;i++) {
-                    if (array[i].indexOf(token)!==0) { continue; }
+                    if(config.ignoreCase){
+                      if (array[i].toLowerCase().indexOf(token.toLowerCase())!==0) { continue; } // ignore case on dropdown
+                    }else{
+                      if (array[i].indexOf(token)!==0) { continue; }
+                    }
                     var divRow =document.createElement('div');
                     divRow.style.color = config.color;
                     divRow.onmouseover = onMouseOver;
@@ -250,14 +256,25 @@ function completely(container, config) {
             leftSide =  text.substring(0,startFrom);
 
             // updating the hint.
-            txtHint.value ='';
-            for (var i=0;i<optionsLength;i++) {
-                var opt = options[i];
-                if (opt.indexOf(token)===0) {         // <-- how about upperCase vs. lowercase
-                    txtHint.value = leftSide +opt;
-                    break;
-                }
+              txtHint.value ='';
+            if(config.ignoreCase){
+              for (var i=0;i<optionsLength;i++) {
+                  var opt = options[i];
+                  if (opt.toLowerCase().indexOf(token.toLowerCase())===0) {
+                      txtHint.value = leftSide + token + opt.substring(token.length);
+                      break;
+                  }
+              }
+            }else{
+              for (var i=0;i<optionsLength;i++) {
+                  var opt = options[i];
+                  if (opt.indexOf(token)===0) {
+                      txtHint.value = leftSide + opt;
+                      break;
+                  }
+              }
             }
+
 
             // moving the dropDown and refreshing it.
             dropDown.style.left = calculateWidthForText(leftSide)+'px';
@@ -275,9 +292,16 @@ function completely(container, config) {
         registerOnTextChangeOldValue = txt.value;
         var handler = function() {
             var value = txt.value;
-            if (registerOnTextChangeOldValue !== value) {
-                registerOnTextChangeOldValue = value;
-                callback(value);
+            if(config.ignoreCase){
+              if (registerOnTextChangeOldValue.toLowerCase() !== value.toLowerCase()) {
+                  registerOnTextChangeOldValue = value;
+                  callback(value);
+              }
+            }else{
+              if (registerOnTextChangeOldValue !== value) {
+                  registerOnTextChangeOldValue = value;
+                  callback(value);
+              }
             }
         };
 
