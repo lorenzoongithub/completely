@@ -177,6 +177,7 @@ function completely(container, config) {
     dropDownController.onmouseselection = function(text) {
         txtInput.value = txtHint.value = leftSide+text; 
         rs.onChange(txtInput.value); // <-- forcing it.
+	scrollLeftEnd();
         registerOnTextChangeOldValue = txtInput.value; // <-- ensure that mouse down will not show the dropDown now.
         setTimeout(function() { txtInput.focus(); },0);  // <-- I need to do this for IE 
     }
@@ -215,6 +216,10 @@ function completely(container, config) {
 		if (spacer.getBoundingClientRect().right > wrapper.getBoundingClientRect().width)
 			 return wrapper.getBoundingClientRect().width; 
 		else return spacer.getBoundingClientRect().right; 
+    }
+	
+    function scrollLeftEnd() {
+        txtInput.scrollLeft = txtInput.getBoundingClientRect().width;
     }
     
     
@@ -341,6 +346,7 @@ function completely(container, config) {
                                                           // user has hit enter to get 'bee' it would be prompted with the dropDown again (as beef and beetroot also match)
                 if (hasTextChanged) {
                     rs.onChange(txtInput.value); // <-- forcing it.
+		    scrollLeftEnd();
                 }
             }
             return; 
@@ -367,6 +373,7 @@ function completely(container, config) {
                                                           // user has hit enter to get 'bee' it would be prompted with the dropDown again (as beef and beetroot also match)
                 if (hasTextChanged) {
                     rs.onChange(txtInput.value); // <-- forcing it.
+		    scrollLeftEnd();
                 }
                 
             }
