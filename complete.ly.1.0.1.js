@@ -1,5 +1,5 @@
 /**
- * complete.ly 1.0.0
+ * complete.ly 1.0.1
  * MIT Licensing
  * Copyright (c) 2013 Lorenzo Puccetti
  * 
@@ -24,14 +24,14 @@ function completely(container, config) {
     txtInput.style.fontSize =        config.fontSize;
     txtInput.style.fontFamily =      config.fontFamily;
     txtInput.style.color =           config.color;
-    txtInput.style.backgroundColor = config.backgroundColor;
+    txtInput.style.backgroundColor = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=)";
     txtInput.style.width = '100%';
     txtInput.style.outline = '0';
     txtInput.style.border =  '0';
     txtInput.style.margin =  '0';
     txtInput.style.padding = '0';
     
-    var txtHint = txtInput.cloneNode(); 
+    var txtHint = txtInput.cloneNode(true); 
     txtHint.disabled='';        
     txtHint.style.position = 'absolute';
     txtHint.style.top =  '0';
@@ -212,7 +212,9 @@ function completely(container, config) {
                                        .replace(/'/g, '&#39;')
                                        .replace(/</g, '&lt;')
                                        .replace(/>/g, '&gt;');
-        return spacer.getBoundingClientRect().right;
+		if (spacer.getBoundingClientRect().right > wrapper.getBoundingClientRect().width)
+			 return wrapper.getBoundingClientRect().width; 
+		else return spacer.getBoundingClientRect().right; 
     }
     
     
