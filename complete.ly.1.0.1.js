@@ -1,5 +1,5 @@
 /**
- * complete.ly 1.0.0
+ * complete.ly 1.0.1.1
  * MIT Licensing
  * Copyright (c) 2013 Lorenzo Puccetti
  * 
@@ -24,14 +24,14 @@ function completely(container, config) {
     txtInput.style.fontSize =        config.fontSize;
     txtInput.style.fontFamily =      config.fontFamily;
     txtInput.style.color =           config.color;
-    txtInput.style.backgroundColor = config.backgroundColor;
+    txtInput.style.backgroundColor = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=)";
     txtInput.style.width = '100%';
     txtInput.style.outline = '0';
     txtInput.style.border =  '0';
     txtInput.style.margin =  '0';
     txtInput.style.padding = '0';
     
-    var txtHint = txtInput.cloneNode(); 
+    var txtHint = txtInput.cloneNode(true); 
     txtHint.disabled='';        
     txtHint.style.position = 'absolute';
     txtHint.style.top =  '0';
@@ -177,6 +177,7 @@ function completely(container, config) {
     dropDownController.onmouseselection = function(text) {
         txtInput.value = txtHint.value = leftSide+text; 
         rs.onChange(txtInput.value); // <-- forcing it.
+	scrollLeftEnd();
         registerOnTextChangeOldValue = txtInput.value; // <-- ensure that mouse down will not show the dropDown now.
         setTimeout(function() { txtInput.focus(); },0);  // <-- I need to do this for IE 
     }
@@ -186,8 +187,11 @@ function completely(container, config) {
     
     var spacer; 
     var leftSide; // <-- it will contain the leftSide part of the textfield (the bit that was already autocompleted)
-    
-    
+	
+    function scrollLeftEnd() {
+        txtInput.scrollLeft = txtInput.getBoundingClientRect().width;
+    }
+	
     function calculateWidthForText(text) {
         if (spacer === undefined) { // on first call only.
             spacer = document.createElement('span'); 
@@ -212,8 +216,12 @@ function completely(container, config) {
                                        .replace(/'/g, '&#39;')
                                        .replace(/</g, '&lt;')
                                        .replace(/>/g, '&gt;');
-        return spacer.getBoundingClientRect().right;
+		if (spacer.getBoundingClientRect().right > wrapper.getBoundingClientRect().width)
+			 return wrapper.getBoundingClientRect().width; 
+		else return spacer.getBoundingClientRect().right; 
     }
+	
+
     
     
     var rs = { 
@@ -339,6 +347,7 @@ function completely(container, config) {
                                                           // user has hit enter to get 'bee' it would be prompted with the dropDown again (as beef and beetroot also match)
                 if (hasTextChanged) {
                     rs.onChange(txtInput.value); // <-- forcing it.
+		    scrollLeftEnd();
                 }
             }
             return; 
@@ -365,6 +374,7 @@ function completely(container, config) {
                                                           // user has hit enter to get 'bee' it would be prompted with the dropDown again (as beef and beetroot also match)
                 if (hasTextChanged) {
                     rs.onChange(txtInput.value); // <-- forcing it.
+		    scrollLeftEnd();
                 }
                 
             }
