@@ -187,8 +187,11 @@ function completely(container, config) {
     
     var spacer; 
     var leftSide; // <-- it will contain the leftSide part of the textfield (the bit that was already autocompleted)
-    
-    
+	
+    function scrollLeftEnd() {
+        txtInput.scrollLeft = txtInput.getBoundingClientRect().width;
+    }
+	
     function calculateWidthForText(text) {
         if (spacer === undefined) { // on first call only.
             spacer = document.createElement('span'); 
@@ -218,9 +221,7 @@ function completely(container, config) {
 		else return spacer.getBoundingClientRect().right; 
     }
 	
-    function scrollLeftEnd() {
-        txtInput.scrollLeft = txtInput.getBoundingClientRect().width;
-    }
+
     
     
     var rs = { 
