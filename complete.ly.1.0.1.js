@@ -1,5 +1,5 @@
 /**
- * complete.ly 1.0.1
+ * complete.ly 1.0.1.1
  * MIT Licensing
  * Copyright (c) 2013 Lorenzo Puccetti
  * 
