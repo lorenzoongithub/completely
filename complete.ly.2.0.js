@@ -90,8 +90,8 @@ function completely(container, config = {}, first = '', options = []) {
 
 	txtInput.onclick = () => {
 		if (dropDown.style.visibility === 'hidden') {
-			let showAll = txtInput.value.length > 0 && (txtHint.value === '' || txtInput.value === txtHint.value);
-			rs.repaint(showAll);
+			txtInput.value=''; 
+			rs.repaint();
 		}
 	}
 
@@ -166,7 +166,7 @@ function completely(container, config = {}, first = '', options = []) {
 
 	const createDropDownController = elem => {
 		let rows = [];
-		let ix = -1;
+		let ix = 0;
 		let oldIndex = -1;
 		let lastValid = '';
 
@@ -333,14 +333,14 @@ function completely(container, config = {}, first = '', options = []) {
 		hideDropDown() {
 			dropDownController.hide();
 		},
-		repaint(showAll) {
+		repaint() {
 			const text = txtInput.value;
 			const startFrom = rs.startFrom;
 			const options = rs.options;
 			const optionsLength = options.length;
 
 			// breaking text in leftSide and token.
-			let token = text.substring(startFrom);
+			const token = text.substring(startFrom);
 			leftSide = text.substring(0, startFrom);
 
 			// updating the hint. 
@@ -357,7 +357,6 @@ function completely(container, config = {}, first = '', options = []) {
 			// moving the dropDown and refreshing it.
 			dropDown.style.left = calculateWidthForText(leftSide) + 'px';
 
-			if (showAll) token = '';
 			dropDownController.refresh(token, rs.options);
 		}
 	};
