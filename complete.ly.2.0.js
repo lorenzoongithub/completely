@@ -60,6 +60,8 @@ function completely(container, config = {}, first = '', options = []) {
 	config.dropDownOnHoverBackgroundColor = config.dropDownOnHoverBackgroundColor || '#ddd';
 	config.forceValid = config.forceValid !== false;
 	config.firstLetterUppercase = !!config.firstLetterUppercase;
+	config.maxHeight = config.maxHeight || (window.innerHeight || document.documentElement.clientHeight);
+	
 	const txtInput = document.createElement('input');
 	txtInput.type = 'text';
 	txtInput.spellcheck = false;
@@ -189,7 +191,7 @@ function completely(container, config = {}, first = '', options = []) {
 				elem.style.visibility = 'hidden';
 				ix = 0;
 				elem.innerHTML = '';
-				const vph = (window.innerHeight || document.documentElement.clientHeight);
+				const vph = config.maxHeight;
 				const rect = elem.parentNode.getBoundingClientRect();
 				const distanceToTop = rect.top - 6; // heuristic give 6px 
 				const distanceToBottom = vph - rect.bottom - 6; // distance from the browser border.
