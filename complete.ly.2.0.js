@@ -415,9 +415,9 @@ function completely(container, config = {}, first = '', options = []) {
 		} // page down (do nothing);
 
 		if (keyCode == 27) { //escape
-			dropDownController.hide();
 			if (config.forceValid) rs.setText(lastValid);
-			txtHint.value = txtInput.value; // ensure that no hint is left.
+			txtHint.value = ''; // ensure that no hint is left.
+			dropDownController.hide();
 			txtInput.focus();
 			return;
 		}
