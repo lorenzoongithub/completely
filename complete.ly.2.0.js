@@ -7,7 +7,7 @@
  * 
  **/
 
-function completely(container, config = {}, first = '', options = []) {
+function completely(container, config = {}) {
 	if (completely.firstTime === undefined) {
 		completely.firstTime = false;
 
@@ -48,6 +48,8 @@ function completely(container, config = {}, first = '', options = []) {
 			rule: 'background-color:#808080;border-radius:100px'
 		}]);
 	}
+	
+	let first, options=[];
 
 	config.fontSize = config.fontSize || '16px';
 	config.fontFamily = config.fontFamily || 'sans-serif';
@@ -61,6 +63,8 @@ function completely(container, config = {}, first = '', options = []) {
 	config.forceValid = config.forceValid !== false;
 	config.firstLetterUppercase = !!config.firstLetterUppercase;
 	config.maxHeight = config.maxHeight || (window.innerHeight || document.documentElement.clientHeight);
+  if (config.first) first=config.first;
+  if (config.options) options=config.options;
 	
 	const txtInput = document.createElement('input');
 	txtInput.type = 'text';
@@ -142,7 +146,7 @@ function completely(container, config = {}, first = '', options = []) {
 	wrapper.addEventListener("focusout", () => {
 		console.log('focusout');
 		dropDownController.hide();
-		if (config.forceValid) rs.setText(lastValid);
+		if (config.forceValid && txtInput.value!==lastValid) rs.setText(lastValid);
 	});
 
 	const dropDown = document.createElement('div');
@@ -239,6 +243,12 @@ function completely(container, config = {}, first = '', options = []) {
 					rows[oldIndex].style.backgroundColor = config.backgroundColor;
 				}
 				rows[index].style.backgroundColor = config.dropDownOnHoverBackgroundColor; // <-- should be config
+				
+        // make sure row scrolled to is in view
+        let rectIndex = rows[index].getBoundingClientRect(), rectDropDown=dropDown.getBoundingClientRect();
+        if (rectIndex.bottom > rectDropDown.bottom) rows[index].scrollIntoView(false);
+        if (rectIndex.top < rectDropDown.top) rows[index].scrollIntoView();
+
 				oldIndex = index;
 			},
 			move(step) { // moves the selection either up or down (unless it's not possible) step is either +1 or -1.
@@ -253,6 +263,11 @@ function completely(container, config = {}, first = '', options = []) {
 		return p;
 	};
 
+  function checkNotify() {
+		setTimeout(() => {
+		  if (config.selectionCallback && txtInput.value!=first) config.selectionCallback(txtInput.value);
+		}, 30);
+  }
 	const dropDownController = createDropDownController(dropDown);
 
 	dropDownController.onmouseselection = text => {
@@ -263,6 +278,7 @@ function completely(container, config = {}, first = '', options = []) {
 		registerOnTextChangeOldValue = txtInput.value; // <-- ensure that mouse down will not show the dropDown now.
 		setTimeout(() => {
 			txtInput.focus();
+			checkNotify();
 		}, 0);
 	};
 
@@ -419,6 +435,7 @@ function completely(container, config = {}, first = '', options = []) {
 			txtHint.value = ''; // ensure that no hint is left.
 			dropDownController.hide();
 			txtInput.focus();
+			checkNotify();
 			return;
 		}
 
@@ -444,6 +461,7 @@ function completely(container, config = {}, first = '', options = []) {
 					scrollLeftEnd();
 				}
 			}
+			checkNotify();
 			return;
 		}
 
@@ -473,6 +491,7 @@ function completely(container, config = {}, first = '', options = []) {
 					}
 				}
 			}
+			checkNotify();
 			return;
 		}
 
