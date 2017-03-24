@@ -58,9 +58,8 @@ function completely(container, config = {}, first = '', options = []) {
 	config.dropDownBorderColor = config.dropDownBorderColor || '#aaa';
 	config.dropDownZIndex = config.dropDownZIndex || '100'; // to ensure we are in front of everybody
 	config.dropDownOnHoverBackgroundColor = config.dropDownOnHoverBackgroundColor || '#ddd';
-	config.caseSensitive = config.caseSensitive === true;
 	config.forceValid = config.forceValid !== false;
-
+	config.firstLetterUppercase = !!config.firstLetterUppercase;
 	const txtInput = document.createElement('input');
 	txtInput.type = 'text';
 	txtInput.spellcheck = false;
@@ -84,12 +83,15 @@ function completely(container, config = {}, first = '', options = []) {
 	txtHint.style.color = config.hintColor;
 
 	txtInput.style.backgroundColor = 'transparent';
-	txtInput.style.verticalAlign = 'top';
+	//txtInput.style.verticalAlign = 'top';
 	txtInput.style.position = 'relative';
 
-	txtInput.onfocus = () => {
-		if (dropDown.style.visibility === 'hidden') rs.repaint();
-	};
+	txtInput.onclick = () => {
+		if (dropDown.style.visibility === 'hidden') {
+			let showAll = txtInput.value.length > 0 && (txtHint.value === '' || txtInput.value === txtHint.value);
+			rs.repaint(showAll);
+		}
+	}
 
 	// try to find first in options, in not there and force use options[0]
 	if (config.forceValid && options.length > 0) {
@@ -136,6 +138,7 @@ function completely(container, config = {}, first = '', options = []) {
 	wrapper.appendChild(txtInput);
 
 	wrapper.addEventListener("focusout", () => {
+		console.log('focusout');
 		dropDownController.hide();
 		if (config.forceValid) rs.setText(lastValid);
 	});
@@ -161,7 +164,7 @@ function completely(container, config = {}, first = '', options = []) {
 
 	const createDropDownController = elem => {
 		let rows = [];
-		let ix = 0;
+		let ix = -1;
 		let oldIndex = -1;
 		let lastValid = '';
 
@@ -178,10 +181,6 @@ function completely(container, config = {}, first = '', options = []) {
 			p.onmouseselection(this.__hint);
 		};
 
-		function cstext(s) {
-			return config.caseSensitive ? s : s.toLowerCase();
-		}
-
 		let p = {
 			hide() {
 				elem.style.visibility = 'hidden';
@@ -197,7 +196,7 @@ function completely(container, config = {}, first = '', options = []) {
 
 				rows = [];
 				for (let i = 0; i < array.length; i++) {
-					if (cstext(array[i]).indexOf(cstext(token)) !== 0) {
+					if (array[i].indexOf(token) !== 0) {
 						continue;
 					}
 					const divRow = document.createElement('div');
@@ -213,13 +212,13 @@ function completely(container, config = {}, first = '', options = []) {
 				if (rows.length === 0) {
 					return; // nothing to show.
 				}
-				if (rows.length === 1 && cstext(token) === cstext(rows[0].__hint)) {
+				if (rows.length === 1 && token === rows[0].__hint) {
 					return; // do not show the dropDown if it has only one element which matches what we have just displayed.
 				}
 				dropDown.style.overflowY = rows.length === 1 ? 'hidden' : 'scroll';
 
 				//if (rows.length<2) return; 
-				if (rows.length > 1) p.highlight(0);
+				if (rows.length > 0) p.highlight(0);
 
 				if (distanceToTop > distanceToBottom * 3) { // Heuristic (only when the distance to the to top is 4 times more than distance to the bottom
 					elem.style.maxHeight = distanceToTop + 'px'; // we display the dropDown on the top of the input text
@@ -262,7 +261,7 @@ function completely(container, config = {}, first = '', options = []) {
 		registerOnTextChangeOldValue = txtInput.value; // <-- ensure that mouse down will not show the dropDown now.
 		setTimeout(() => {
 			txtInput.focus();
-		}, 0); // <-- I need to do this for IE 
+		}, 0);
 	};
 
 	wrapper.appendChild(dropDown);
@@ -310,7 +309,10 @@ function completely(container, config = {}, first = '', options = []) {
 		onEnter() {}, // defaults to no action.
 		onTab() {}, // defaults to no action.
 		onChange() {
+			if (config.firstLetterUppercase && txtInput.value.length === 1 && txtInput.value != txtInput.value.toUpperCase()) txtInput.value = txtInput.value.toUpperCase();
 			rs.repaint();
+			// no need for hint if it equals txtInput.value
+			if (txtHint.value === txtInput.value) setTimeout(() => txtHint.value = '', 30);
 		}, // defaults to repainting.
 		startFrom: 0,
 		options: options,
@@ -320,7 +322,7 @@ function completely(container, config = {}, first = '', options = []) {
 		dropDown, // Only to allow  easy access to the HTML elements to the final user (possibly for minor customizations)
 		prompt,
 		setText(text) {
-			txtHint.value = text;
+			txtHint.value = '';
 			txtInput.value = text;
 		},
 		getText() {
@@ -329,14 +331,14 @@ function completely(container, config = {}, first = '', options = []) {
 		hideDropDown() {
 			dropDownController.hide();
 		},
-		repaint() {
+		repaint(showAll) {
 			const text = txtInput.value;
 			const startFrom = rs.startFrom;
 			const options = rs.options;
 			const optionsLength = options.length;
 
 			// breaking text in leftSide and token.
-			const token = text.substring(startFrom);
+			let token = text.substring(startFrom);
 			leftSide = text.substring(0, startFrom);
 
 			// updating the hint. 
@@ -348,9 +350,12 @@ function completely(container, config = {}, first = '', options = []) {
 					break;
 				}
 			}
+			if (txtHint.value === txtInput.value) txtHint.value = '';
 
 			// moving the dropDown and refreshing it.
 			dropDown.style.left = calculateWidthForText(leftSide) + 'px';
+
+			if (showAll) token = '';
 			dropDownController.refresh(token, rs.options);
 		}
 	};
