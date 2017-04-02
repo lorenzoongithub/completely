@@ -48,8 +48,8 @@ function completely(container, config = {}) {
 			rule: 'background-color:#808080;border-radius:100px'
 		}]);
 	}
-	
-	let first, options=[];
+
+	let first, options = [];
 
 	config.fontSize = config.fontSize || '16px';
 	config.fontFamily = config.fontFamily || 'sans-serif';
@@ -63,9 +63,11 @@ function completely(container, config = {}) {
 	config.forceValid = config.forceValid !== false;
 	config.firstLetterUppercase = !!config.firstLetterUppercase;
 	config.maxHeight = config.maxHeight || (window.innerHeight || document.documentElement.clientHeight);
-  if (config.first) first=config.first;
-  if (config.options) options=config.options;
-	
+	config.border = config.border || '0';
+
+	if (config.first) first = config.first;
+	if (config.options) options = config.options;
+
 	const txtInput = document.createElement('input');
 	txtInput.type = 'text';
 	txtInput.spellcheck = false;
@@ -94,7 +96,7 @@ function completely(container, config = {}) {
 
 	txtInput.onclick = () => {
 		if (dropDown.style.visibility === 'hidden') {
-			txtInput.value=''; 
+			txtInput.value = '';
 			rs.repaint();
 		}
 	}
@@ -110,7 +112,7 @@ function completely(container, config = {}) {
 	const wrapper = document.createElement('div');
 	wrapper.style.position = 'relative';
 	wrapper.style.outline = '0';
-	wrapper.style.border = '0';
+	wrapper.style.border = config.border;
 	wrapper.style.margin = '0';
 	wrapper.style.padding = '0';
 
@@ -144,9 +146,8 @@ function completely(container, config = {}) {
 	wrapper.appendChild(txtInput);
 
 	wrapper.addEventListener("focusout", () => {
-		console.log('focusout');
 		dropDownController.hide();
-		if (config.forceValid && txtInput.value!==lastValid) rs.setText(lastValid);
+		if (config.forceValid && txtInput.value !== lastValid) rs.setText(lastValid);
 	});
 
 	const dropDown = document.createElement('div');
@@ -243,11 +244,12 @@ function completely(container, config = {}) {
 					rows[oldIndex].style.backgroundColor = config.backgroundColor;
 				}
 				rows[index].style.backgroundColor = config.dropDownOnHoverBackgroundColor; // <-- should be config
-				
-        // make sure row scrolled to is in view
-        let rectIndex = rows[index].getBoundingClientRect(), rectDropDown=dropDown.getBoundingClientRect();
-        if (rectIndex.bottom > rectDropDown.bottom) rows[index].scrollIntoView(false);
-        if (rectIndex.top < rectDropDown.top) rows[index].scrollIntoView();
+
+				// make sure row scrolled to is in view
+				let rectIndex = rows[index].getBoundingClientRect(),
+					rectDropDown = dropDown.getBoundingClientRect();
+				if (rectIndex.bottom > rectDropDown.bottom) rows[index].scrollIntoView(false);
+				if (rectIndex.top < rectDropDown.top) rows[index].scrollIntoView();
 
 				oldIndex = index;
 			},
@@ -263,11 +265,11 @@ function completely(container, config = {}) {
 		return p;
 	};
 
-  function checkNotify() {
+	function checkNotify() {
 		setTimeout(() => {
-		  if (config.selectionCallback && txtInput.value!=first) config.selectionCallback(txtInput.value);
+			if (config.selectionCallback) config.selectionCallback(txtInput.value);
 		}, 30);
-  }
+	}
 	const dropDownController = createDropDownController(dropDown);
 
 	dropDownController.onmouseselection = text => {
